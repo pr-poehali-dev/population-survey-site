@@ -11,6 +11,7 @@ import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
+  const [currentSurveyId, setCurrentSurveyId] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, any>>({});
   const [surveyCompleted, setSurveyCompleted] = useState(false);
@@ -44,10 +45,87 @@ const Index = () => {
           placeholder: 'Напишите ваши предложения...'
         }
       ]
+    },
+    {
+      id: 2,
+      title: 'Удовлетворенность населения занятиями физкультурой и спортом',
+      description: 'Анкета для проведения опроса',
+      category: 'Спорт и здоровье',
+      participants: 842,
+      deadline: '30 ноября 2025',
+      questions: [
+        {
+          id: 1,
+          type: 'radio',
+          question: '1. Пол',
+          options: ['1. мужской', '2. женский']
+        },
+        {
+          id: 2,
+          type: 'text',
+          question: '2. Сколько лет Вам исполнилось?',
+          placeholder: 'Напишите число полных лет респондента'
+        },
+        {
+          id: 3,
+          type: 'radio',
+          question: '3. Занимаетесь Вы или Ваш ребенок в спортивной организации?',
+          options: [
+            '1. Занимаюсь сам;',
+            '2. Занимается ребенок;',
+            '3. Занимаюсь и сам и занимается ребенок;',
+            '4. Затрудняюсь ответить.'
+          ]
+        },
+        {
+          id: 4,
+          type: 'radio',
+          question: '4. Как часто Вы или Ваш ребенок посещаете в спортивную организацию?',
+          options: [
+            '1. 1 – 2 раза в месяц;',
+            '2. от 1 до 2 раза в неделю;',
+            '3. более 3 раз в неделю;',
+            '4. Иное'
+          ]
+        },
+        {
+          id: 5,
+          type: 'radio',
+          question: '5. Какие виды услуг Вы или Ваш ребенок получаете в спортивной организации?',
+          options: [
+            '1. Платные физкультурно-оздоровительные услуги (групповые занятия, индивидуальные посещения);',
+            '2. Спортивная подготовка на безвозмездной основе;',
+            '3. Спортивная подготовка на платной основе;',
+            '4. Бесплатные/ платные физкультурно-оздоровительные услуги (групповые занятия, индивидуальные посещения);',
+            '5. Иное'
+          ]
+        },
+        {
+          id: 6,
+          type: 'matrix',
+          question: '6. Насколько Вы удовлетворены следующими условиями для занятий в спортивной организации:',
+          rows: [
+            '1. Возможность выбора занятий в соответствии со своими интересами',
+            '2. Оборудование, санитарно-гигиеническое состояние мест занятий',
+            '3. Материально-техническая оснащенность мест занятий (наличие и состояние спортивного оборудования и инвентаря)',
+            '4. Удобное расписание предоставления услуг',
+            '5. Профессионализм и отношение тренерского состава',
+            '6. Доступность информации о проводимых физкультурно-спортивных мероприятиях',
+            '7. Безопасность посещения спортивных объектов'
+          ],
+          columns: [
+            'Полностью удовлетворён',
+            'Скорее удовлетворён',
+            'Скорее не удовлетворён',
+            'Совершенно не удовлетворён',
+            'Затрудняюсь ответить'
+          ]
+        }
+      ]
     }
   ];
 
-  const activeSurvey = surveys[0];
+  const activeSurvey = surveys.find(s => s.id === currentSurveyId) || surveys[0];
   const totalQuestions = activeSurvey.questions.length;
   const progress = ((currentQuestion + 1) / totalQuestions) * 100;
 
@@ -129,24 +207,48 @@ const Index = () => {
 
           <TabsContent value="active" className="animate-fade-in">
             <div className="max-w-3xl mx-auto">
-              <div className="mb-8 text-center">
-                <h2 className="text-4xl font-heading font-bold mb-4 text-foreground">
-                  {activeSurvey.title}
-                </h2>
-                <p className="text-muted-foreground text-lg">{activeSurvey.description}</p>
-                <div className="flex gap-4 justify-center mt-4 flex-wrap">
-                  <Badge variant="secondary" className="px-4 py-1">
-                    <Icon name="Users" size={14} className="mr-1" />
-                    {activeSurvey.participants} участников
-                  </Badge>
-                  <Badge variant="outline" className="px-4 py-1">
-                    <Icon name="Calendar" size={14} className="mr-1" />
-                    До {activeSurvey.deadline}
-                  </Badge>
-                  <Badge variant="outline" className="px-4 py-1">
-                    <Icon name="Tag" size={14} className="mr-1" />
-                    {activeSurvey.category}
-                  </Badge>
+              <div className="mb-8">
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  {surveys.map((survey) => (
+                    <Card 
+                      key={survey.id}
+                      className={`cursor-pointer transition-all hover:shadow-lg ${
+                        currentSurveyId === survey.id ? 'border-primary border-2 shadow-md' : ''
+                      }`}
+                      onClick={() => {
+                        setCurrentSurveyId(survey.id);
+                        setCurrentQuestion(0);
+                        setAnswers({});
+                        setSurveyCompleted(false);
+                      }}
+                    >
+                      <CardHeader>
+                        <CardTitle className="text-lg">{survey.title}</CardTitle>
+                        <CardDescription>{survey.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex gap-2 flex-wrap">
+                          <Badge variant="secondary" className="text-xs">
+                            <Icon name="Users" size={12} className="mr-1" />
+                            {survey.participants}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            <Icon name="Calendar" size={12} className="mr-1" />
+                            До {survey.deadline}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {survey.category}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <div className="text-center mb-6">
+                  <h2 className="text-3xl font-heading font-bold mb-2 text-foreground">
+                    {activeSurvey.title}
+                  </h2>
+                  <p className="text-muted-foreground">{activeSurvey.description}</p>
                 </div>
               </div>
 
@@ -216,6 +318,43 @@ const Index = () => {
                       />
                     )}
 
+                    {currentQ.type === 'matrix' && (
+                      <div className="space-y-4 overflow-x-auto">
+                        <div className="min-w-[600px]">
+                          <div className="grid grid-cols-6 gap-2 mb-4">
+                            <div className="col-span-1"></div>
+                            {currentQ.columns?.map((col, idx) => (
+                              <div key={idx} className="text-center text-xs font-medium text-muted-foreground px-2">
+                                {col}
+                              </div>
+                            ))}
+                          </div>
+                          {currentQ.rows?.map((row, rowIdx) => (
+                            <div key={rowIdx} className="grid grid-cols-6 gap-2 mb-3 items-center p-2 rounded-lg hover:bg-blue-50 transition-colors">
+                              <div className="col-span-1 text-sm pr-4">{row}</div>
+                              <RadioGroup
+                                value={answers[currentQuestion]?.[rowIdx] || ''}
+                                onValueChange={(value) => {
+                                  const matrixAnswers = answers[currentQuestion] || {};
+                                  handleAnswer({ ...matrixAnswers, [rowIdx]: value });
+                                }}
+                                className="contents"
+                              >
+                                {currentQ.columns?.map((col, colIdx) => (
+                                  <div key={colIdx} className="flex justify-center">
+                                    <RadioGroupItem
+                                      value={colIdx.toString()}
+                                      id={`${rowIdx}-${colIdx}`}
+                                    />
+                                  </div>
+                                ))}
+                              </RadioGroup>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex justify-between gap-4 pt-4">
                       <Button
                         variant="outline"
@@ -228,7 +367,11 @@ const Index = () => {
                       </Button>
                       <Button
                         onClick={handleNext}
-                        disabled={!answers[currentQuestion]}
+                        disabled={
+                          currentQ.type === 'matrix' 
+                            ? !answers[currentQuestion] || Object.keys(answers[currentQuestion]).length !== currentQ.rows?.length
+                            : !answers[currentQuestion]
+                        }
                         className="w-32"
                       >
                         {currentQuestion === totalQuestions - 1 ? 'Завершить' : 'Далее'}
@@ -247,10 +390,35 @@ const Index = () => {
                     <p className="text-muted-foreground text-lg mb-6">
                       Ваши ответы помогут улучшить качество городских услуг
                     </p>
-                    <Button onClick={() => window.location.reload()} size="lg">
-                      <Icon name="RotateCcw" size={18} className="mr-2" />
-                      Пройти другой опрос
-                    </Button>
+                    <div className="flex gap-4 justify-center">
+                      <Button 
+                        onClick={() => {
+                          setCurrentQuestion(0);
+                          setAnswers({});
+                          setSurveyCompleted(false);
+                        }} 
+                        size="lg" 
+                        variant="outline"
+                      >
+                        <Icon name="RotateCcw" size={18} className="mr-2" />
+                        Пройти заново
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          const nextSurvey = surveys.find(s => s.id !== currentSurveyId);
+                          if (nextSurvey) {
+                            setCurrentSurveyId(nextSurvey.id);
+                            setCurrentQuestion(0);
+                            setAnswers({});
+                            setSurveyCompleted(false);
+                          }
+                        }} 
+                        size="lg"
+                      >
+                        <Icon name="ListChecks" size={18} className="mr-2" />
+                        Другой опрос
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
