@@ -9,12 +9,27 @@ import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const Index = () => {
   const [currentSurveyId, setCurrentSurveyId] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, any>>({});
   const [surveyCompleted, setSurveyCompleted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+
+  const handleAdminLogin = () => {
+    if (adminPassword === 'admin123') {
+      setIsAdmin(true);
+      setShowAdminLogin(false);
+      setAdminPassword('');
+    } else {
+      alert('Неверный пароль');
+    }
+  };
 
   const surveys = [
     {
@@ -154,15 +169,36 @@ const Index = () => {
               <Icon name="ClipboardList" size={32} className="text-primary" />
               <h1 className="text-2xl font-heading font-bold text-primary">ОпросыОнлайн</h1>
             </div>
-            <nav className="hidden md:flex gap-6">
+            <nav className="hidden md:flex gap-6 items-center">
               <Button variant="ghost" className="font-medium">
                 <Icon name="ClipboardCheck" size={18} className="mr-2" />
                 Активные опросы
               </Button>
-              <Button variant="ghost" className="font-medium">
-                <Icon name="BarChart3" size={18} className="mr-2" />
-                Результаты
-              </Button>
+              {isAdmin ? (
+                <>
+                  <Button variant="ghost" className="font-medium">
+                    <Icon name="BarChart3" size={18} className="mr-2" />
+                    Результаты
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsAdmin(false)}
+                  >
+                    <Icon name="LogOut" size={16} className="mr-1" />
+                    Выход
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowAdminLogin(true)}
+                >
+                  <Icon name="Lock" size={16} className="mr-1" />
+                  Администратор
+                </Button>
+              )}
             </nav>
           </div>
         </div>
@@ -170,10 +206,14 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-12">
         <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+          <TabsList className={`grid w-full max-w-md mx-auto ${isAdmin ? 'grid-cols-3' : 'grid-cols-1'} mb-8`}>
             <TabsTrigger value="active">Активные</TabsTrigger>
-            <TabsTrigger value="results">Результаты</TabsTrigger>
-            <TabsTrigger value="stats">Статистика</TabsTrigger>
+            {isAdmin && (
+              <>
+                <TabsTrigger value="results">Результаты</TabsTrigger>
+                <TabsTrigger value="stats">Статистика</TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           <TabsContent value="active" className="animate-fade-in">
@@ -518,6 +558,33 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <Dialog open={showAdminLogin} onOpenChange={setShowAdminLogin}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Вход для администратора</DialogTitle>
+            <DialogDescription>
+              Введите пароль для доступа к результатам и статистике
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Пароль"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleAdminLogin();
+                }
+              }}
+            />
+            <Button onClick={handleAdminLogin} className="w-full">
+              Войти
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
