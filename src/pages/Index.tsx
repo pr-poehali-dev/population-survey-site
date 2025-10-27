@@ -22,7 +22,7 @@ const Index = () => {
       title: 'Удовлетворенность населения занятиями физкультурой и спортом',
       description: 'Анкета для проведения опроса',
       category: 'Спорт и здоровье',
-      participants: 842,
+      participants: 0,
       deadline: '30 ноября 2025',
       questions: [
         {
@@ -121,28 +121,28 @@ const Index = () => {
   const currentQ = activeSurvey.questions[currentQuestion];
 
   const mockResults = {
-    totalResponses: 1247,
+    totalResponses: 0,
     demographics: {
       age: [
-        { range: '18-24', count: 234, percentage: 18.8 },
-        { range: '25-34', count: 398, percentage: 31.9 },
-        { range: '35-44', count: 312, percentage: 25.0 },
-        { range: '45-54', count: 187, percentage: 15.0 },
-        { range: '55+', count: 116, percentage: 9.3 }
+        { range: '18-24', count: 0, percentage: 0 },
+        { range: '25-34', count: 0, percentage: 0 },
+        { range: '35-44', count: 0, percentage: 0 },
+        { range: '45-54', count: 0, percentage: 0 },
+        { range: '55+', count: 0, percentage: 0 }
       ]
     },
     questionResults: [
       {
-        question: 'Качество уборки улиц',
+        question: 'Удовлетворенность занятиями',
         data: [
-          { option: 'Отлично', count: 187, percentage: 15.0 },
-          { option: 'Хорошо', count: 498, percentage: 39.9 },
-          { option: 'Удовлетворительно', count: 374, percentage: 30.0 },
-          { option: 'Плохо', count: 188, percentage: 15.1 }
+          { option: 'Полностью удовлетворён', count: 0, percentage: 0 },
+          { option: 'Скорее удовлетворён', count: 0, percentage: 0 },
+          { option: 'Скорее не удовлетворён', count: 0, percentage: 0 },
+          { option: 'Совершенно не удовлетворён', count: 0, percentage: 0 }
         ]
       }
     ],
-    averageRating: 6.8
+    averageRating: 0
   };
 
   return (
