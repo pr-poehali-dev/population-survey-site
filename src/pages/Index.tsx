@@ -107,10 +107,6 @@ const Index = () => {
             </div>
             <nav className="hidden md:flex gap-6">
               <Button variant="ghost" className="font-medium">
-                <Icon name="Home" size={18} className="mr-2" />
-                Главная
-              </Button>
-              <Button variant="ghost" className="font-medium">
                 <Icon name="ClipboardCheck" size={18} className="mr-2" />
                 Активные опросы
               </Button>
