@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -20,6 +20,52 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const API_URL = 'https://functions.poehali.dev/a8b02780-46dc-4291-9a31-590566247c56';
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch(`${API_URL}/?action=stats&survey_id=${currentSurveyId}`);
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadStats();
+    }
+  }, [isAdmin, currentSurveyId]);
+
+  const submitSurvey = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          surveyId: currentSurveyId,
+          answers: answers
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSurveyCompleted(true);
+        loadStats();
+      }
+    } catch (error) {
+      console.error('Error submitting survey:', error);
+      alert('Ошибка при отправке опроса');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAdminLogin = () => {
     if (adminPassword === 'admin123') {
@@ -123,7 +169,7 @@ const Index = () => {
     if (currentQuestion < totalQuestions - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      setSurveyCompleted(true);
+      submitSurvey();
     }
   };
 
@@ -135,7 +181,7 @@ const Index = () => {
 
   const currentQ = activeSurvey.questions[currentQuestion];
 
-  const mockResults = {
+  const displayStats = stats || {
     totalResponses: 0,
     demographics: {
       age: [
@@ -149,12 +195,7 @@ const Index = () => {
     questionResults: [
       {
         question: 'Удовлетворенность занятиями',
-        data: [
-          { option: 'Полностью удовлетворён', count: 0, percentage: 0 },
-          { option: 'Скорее удовлетворён', count: 0, percentage: 0 },
-          { option: 'Скорее не удовлетворён', count: 0, percentage: 0 },
-          { option: 'Совершенно не удовлетворён', count: 0, percentage: 0 }
-        ]
+        data: []
       }
     ],
     averageRating: 0
@@ -241,7 +282,7 @@ const Index = () => {
                         <div className="flex gap-2 flex-wrap">
                           <Badge variant="secondary" className="text-xs">
                             <Icon name="Users" size={12} className="mr-1" />
-                            {survey.participants}
+                            {stats?.totalResponses || 0}
                           </Badge>
                           <Badge variant="outline" className="text-xs">
                             <Icon name="Calendar" size={12} className="mr-1" />
@@ -379,14 +420,14 @@ const Index = () => {
                       <Button
                         onClick={handleNext}
                         disabled={
-                          currentQ.type === 'matrix' 
+                          isLoading || (currentQ.type === 'matrix' 
                             ? !answers[currentQuestion] || Object.keys(answers[currentQuestion]).length !== currentQ.rows?.length
-                            : !answers[currentQuestion]
+                            : !answers[currentQuestion])
                         }
                         className="w-32"
                       >
-                        {currentQuestion === totalQuestions - 1 ? 'Завершить' : 'Далее'}
-                        <Icon name="ChevronRight" size={18} className="ml-1" />
+                        {isLoading ? 'Отправка...' : (currentQuestion === totalQuestions - 1 ? 'Завершить' : 'Далее')}
+                        {!isLoading && <Icon name="ChevronRight" size={18} className="ml-1" />}
                       </Button>
                     </div>
                   </CardContent>
@@ -453,13 +494,13 @@ const Index = () => {
                     <div className="grid md:grid-cols-3 gap-6">
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-4xl font-bold text-primary mb-2">
-                          {mockResults.totalResponses}
+                          {displayStats.totalResponses}
                         </div>
                         <div className="text-sm text-muted-foreground">Всего ответов</div>
                       </div>
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-4xl font-bold text-primary mb-2">
-                          {mockResults.averageRating}
+                          {displayStats.averageRating}
                         </div>
                         <div className="text-sm text-muted-foreground">Средняя оценка</div>
                       </div>
@@ -482,17 +523,23 @@ const Index = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {mockResults.questionResults[0].data.map((item) => (
-                        <div key={item.option} className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="font-medium">{item.option}</span>
-                            <span className="text-muted-foreground">
-                              {item.count} ({item.percentage}%)
-                            </span>
+                      {displayStats.questionResults[0]?.data?.length > 0 ? (
+                        displayStats.questionResults[0].data.map((item: any) => (
+                          <div key={item.option} className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="font-medium">{item.option}</span>
+                              <span className="text-muted-foreground">
+                                {item.count} ({item.percentage}%)
+                              </span>
+                            </div>
+                            <Progress value={item.percentage} className="h-3" />
                           </div>
-                          <Progress value={item.percentage} className="h-3" />
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <p className="text-center text-muted-foreground py-8">
+                          Пока нет ответов на этот вопрос
+                        </p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -514,7 +561,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {mockResults.demographics.age.map((item) => (
+                    {displayStats.demographics.age.map((item) => (
                       <div key={item.range} className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="font-medium text-lg">{item.range} лет</span>

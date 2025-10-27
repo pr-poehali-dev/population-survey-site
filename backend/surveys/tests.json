@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "Get survey statistics",
+      "method": "GET",
+      "path": "/?action=stats&survey_id=1",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Submit survey response",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "surveyId": 1,
+        "answers": {
+          "0": "1. мужской",
+          "1": "25"
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
